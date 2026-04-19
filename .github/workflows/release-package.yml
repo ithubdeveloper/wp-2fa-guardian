@@ -1,0 +1,35 @@
+name: Release Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build and publish release ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build plugin ZIP
+        shell: bash
+        run: |
+          mkdir -p build
+          zip -r build/wp-2fa-guardian.zip . \
+            -x '*.git*' \
+            -x 'build/*' \
+            -x '.DS_Store' \
+            -x '.github/*' \
+            -x 'tests/*' \
+            -x 'bin/*' \
+            -x 'vendor/*' \
+            -x 'composer.lock' \
+            -x 'phpunit.xml.dist'
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/wp-2fa-guardian.zip

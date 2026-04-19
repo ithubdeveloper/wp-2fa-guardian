@@ -1,0 +1,8 @@
+/.github export-ignore
+/bin export-ignore
+/build export-ignore
+/tests export-ignore
+/.DS_Store export-ignore
+/phpunit.xml.dist export-ignore
+/composer.lock export-ignore
+/vendor export-ignore

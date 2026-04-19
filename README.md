@@ -23,6 +23,7 @@ Two-factor authentication for WordPress with TOTP, email OTP, WebAuthn security 
 - Author: [IT Hub Developer](https://github.com/ithubdeveloper)
 - Repository: [ithubdeveloper/wp-2fa-guardian](https://github.com/ithubdeveloper/wp-2fa-guardian)
 - License: [GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html)
+- Install modes: Composer from GitHub or standalone ZIP upload
 
 ## Features
 
@@ -45,10 +46,34 @@ Two-factor authentication for WordPress with TOTP, email OTP, WebAuthn security 
 
 ## Installation
 
+### Install with Composer from GitHub
+
+Use a VCS repository entry in the WordPress project that will consume the plugin. The root project should already support WordPress plugin installers, typically via `composer/installers`.
+
+```json
+{
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:ithubdeveloper/wp-2fa-guardian.git"
+    }
+  ],
+  "require": {
+    "ithubdeveloper/wp-2fa-guardian": "dev-main"
+  }
+}
+```
+
+If your project uses Composer installers, the plugin will install to your WordPress plugins directory as `wp-2fa-guardian`.
+
+### Install as a Standalone Plugin ZIP
+
 1. Upload the `wp-2fa-guardian` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the Plugins screen in WordPress.
 3. Go to `2FA Guardian > Settings` to configure allowed methods and enforcement.
 4. Users can configure their methods from their profile area or from the dedicated setup flow when 2FA is required at login.
+
+You can also download a release ZIP from the GitHub Releases page once published.
 
 ## Frequently Asked Questions
 

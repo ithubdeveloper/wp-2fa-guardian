@@ -28,6 +28,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           coverage: none
+          tools: composer
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -79,6 +80,9 @@ jobs:
           echo "Plugin header looks valid.\n";
           '
 
+      - name: Validate Composer metadata
+        run: composer validate --no-check-publish --strict
+
       - name: Build plugin package
         shell: bash
         run: |
@@ -91,7 +95,6 @@ jobs:
             -x 'tests/*' \
             -x 'bin/*' \
             -x 'vendor/*' \
-            -x 'composer.json' \
             -x 'composer.lock' \
             -x 'phpunit.xml.dist'
 
