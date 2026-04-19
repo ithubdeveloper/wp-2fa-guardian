@@ -1,6 +1,18 @@
 # 2FA Guardian
 
+![Trust Badge](assets/img/trust-badge.svg)
+
+[![Plugin Checks](https://github.com/ithubdeveloper/wp-2fa-guardian/actions/workflows/plugin-checks.yml/badge.svg)](https://github.com/ithubdeveloper/wp-2fa-guardian/actions/workflows/plugin-checks.yml)
+[![WordPress PHPUnit](https://github.com/ithubdeveloper/wp-2fa-guardian/actions/workflows/phpunit.yml/badge.svg)](https://github.com/ithubdeveloper/wp-2fa-guardian/actions/workflows/phpunit.yml)
+![WordPress 6.0+](https://img.shields.io/badge/WordPress-6.0%2B-21759B?logo=wordpress&logoColor=white)
+![PHP 8.0+](https://img.shields.io/badge/PHP-8.0%2B-777BB4?logo=php&logoColor=white)
+![Security Focused](https://img.shields.io/badge/Security-Focused-0F766E?logo=shield&logoColor=white)
+
 Two-factor authentication for WordPress with TOTP, email OTP, WebAuthn security keys, backup codes, trusted devices, and login protection.
+
+## Why Trust This Plugin
+
+2FA Guardian is built around local-first authentication data, multiple recovery paths, and repeatable release checks. The repository includes automated syntax checks, packaging validation, and WordPress PHPUnit smoke tests so changes are verified before release.
 
 ## Plugin Details
 
@@ -22,6 +34,14 @@ Two-factor authentication for WordPress with TOTP, email OTP, WebAuthn security 
 - Login attempt logging and brute-force lockouts
 - Per-role enforcement settings
 - Per-user reset tools for administrators
+
+## Quality Signals
+
+- Supports modern passkeys and WebAuthn security keys
+- Stores authentication data inside WordPress rather than relying on third-party SaaS services
+- Includes backup codes and trusted devices for safer recovery flows
+- Uses GitHub Actions for PHP linting, JS checks, packaging checks, and WordPress PHPUnit smoke tests
+- Publishes from a versioned Git repository with transparent change history
 
 ## Installation
 
