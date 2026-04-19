@@ -56,9 +56,9 @@ No. The plugin does not require Composer to run.
 
 == Screenshots ==
 
-1. Login verification screen.
-2. User profile 2FA setup screen.
-3. Settings screen for enforcement, trusted devices, and security logging.
+1. Login verification challenge with multiple fallback methods.
+2. User profile setup with TOTP, email OTP, WebAuthn/passkeys, and backup codes.
+3. Admin settings for role enforcement, lockout controls, and security activity review.
 
 == Changelog ==
 
