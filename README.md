@@ -99,9 +99,17 @@ No. The plugin does not require Composer to run.
 
 ## Screenshots
 
-1. Login verification screen
-2. User profile 2FA setup screen
-3. Settings screen for enforcement, trusted devices, and security logging
+### Dashboard Overview
+
+![Dashboard overview](assets/screenshots/dashboard-overview.svg)
+
+### Settings Screen
+
+![Settings screen](assets/screenshots/settings-screen.svg)
+
+### Login Verification
+
+![Login verification](assets/screenshots/login-verification.svg)
 
 ## Changelog
 

@@ -1,0 +1,105 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#EEF5FF"/>
+    </linearGradient>
+    <linearGradient id="nav" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="hero" x1="280" y1="120" x2="1460" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#155EEF"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1600" height="1000" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="250" height="1000" fill="url(#nav)"/>
+  <text x="42" y="72" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">2FA Guardian</text>
+  <rect x="28" y="110" width="194" height="54" rx="14" fill="#1D4ED8"/>
+  <text x="56" y="144" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Dashboard</text>
+  <text x="42" y="222" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="22">Settings</text>
+  <text x="42" y="274" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="22">Security Log</text>
+  <text x="42" y="326" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="22">User Setup</text>
+
+  <text x="300" y="72" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">2FA Guardian Dashboard</text>
+  <text x="300" y="108" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="22">Live overview of adoption, security keys, blocked IPs, and recent login activity.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="280" y="132" width="1260" height="170" rx="28" fill="url(#hero)"/>
+  </g>
+  <text x="328" y="196" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Security posture</text>
+  <text x="328" y="246" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">84% of users protected with 2FA</text>
+  <text x="328" y="283" fill="#DFF7FF" font-family="Arial, Helvetica, sans-serif" font-size="22">Passkeys and security keys active, no critical lockouts in the last 24 hours.</text>
+  <rect x="1260" y="182" width="218" height="62" rx="18" fill="#DCFCE7"/>
+  <text x="1312" y="220" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">PASS CHECK</text>
+
+  <rect x="280" y="344" width="290" height="160" rx="24" fill="white"/>
+  <rect x="600" y="344" width="290" height="160" rx="24" fill="white"/>
+  <rect x="920" y="344" width="290" height="160" rx="24" fill="white"/>
+  <rect x="1240" y="344" width="300" height="160" rx="24" fill="white"/>
+
+  <text x="314" y="392" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="20">Users with 2FA</text>
+  <text x="314" y="448" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">842</text>
+  <text x="426" y="448" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="28">/ 1000</text>
+  <rect x="314" y="466" width="220" height="12" rx="6" fill="#DBEAFE"/>
+  <rect x="314" y="466" width="184" height="12" rx="6" fill="#2563EB"/>
+
+  <text x="634" y="392" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="20">Security keys</text>
+  <text x="634" y="448" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">216</text>
+  <text x="634" y="482" fill="#16A34A" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">+18 this month</text>
+
+  <text x="954" y="392" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="20">Blocked IPs</text>
+  <text x="954" y="448" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">3</text>
+  <text x="954" y="482" fill="#DC2626" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Brute-force lockouts active</text>
+
+  <text x="1274" y="392" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="20">Plugin status</text>
+  <text x="1274" y="448" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">Enabled</text>
+  <rect x="1274" y="466" width="154" height="38" rx="19" fill="#DCFCE7"/>
+  <text x="1318" y="491" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Healthy</text>
+
+  <rect x="280" y="544" width="790" height="346" rx="28" fill="white"/>
+  <rect x="1100" y="544" width="440" height="346" rx="28" fill="white"/>
+
+  <text x="316" y="596" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Recent Login Activity</text>
+  <text x="1128" y="596" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Blocked IPs and Quick Actions</text>
+
+  <text x="320" y="648" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="18">IP Address</text>
+  <text x="520" y="648" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="18">Login</text>
+  <text x="700" y="648" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="18">Result</text>
+  <text x="844" y="648" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="18">Time</text>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="20">
+    <text x="320" y="700" fill="#0F172A">192.168.1.28</text>
+    <text x="520" y="700" fill="#0F172A">admin</text>
+    <rect x="686" y="676" width="118" height="34" rx="17" fill="#DCFCE7"/><text x="720" y="699" fill="#166534" font-weight="700">success</text>
+    <text x="844" y="700" fill="#475569">2 min ago</text>
+
+    <text x="320" y="752" fill="#0F172A">10.0.0.51</text>
+    <text x="520" y="752" fill="#0F172A">editor</text>
+    <rect x="686" y="728" width="118" height="34" rx="17" fill="#FEE2E2"/><text x="732" y="751" fill="#B91C1C" font-weight="700">fail</text>
+    <text x="844" y="752" fill="#475569">8 min ago</text>
+
+    <text x="320" y="804" fill="#0F172A">172.16.4.10</text>
+    <text x="520" y="804" fill="#0F172A">manager</text>
+    <rect x="686" y="780" width="118" height="34" rx="17" fill="#DBEAFE"/><text x="714" y="803" fill="#1D4ED8" font-weight="700">blocked</text>
+    <text x="844" y="804" fill="#475569">14 min ago</text>
+  </g>
+
+  <rect x="1128" y="642" width="170" height="46" rx="16" fill="#FEF2F2"/>
+  <text x="1162" y="672" fill="#B91C1C" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">203.0.113.12</text>
+  <rect x="1128" y="708" width="170" height="46" rx="16" fill="#FEF2F2"/>
+  <text x="1162" y="738" fill="#B91C1C" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">198.51.100.7</text>
+  <rect x="1128" y="774" width="170" height="46" rx="16" fill="#FEF2F2"/>
+  <text x="1162" y="804" fill="#B91C1C" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">203.0.113.77</text>
+
+  <rect x="1320" y="642" width="176" height="54" rx="18" fill="#E0F2FE"/>
+  <text x="1362" y="676" fill="#075985" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Settings</text>
+  <rect x="1320" y="714" width="176" height="54" rx="18" fill="#EEF2FF"/>
+  <text x="1354" y="748" fill="#4338CA" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Manage Users</text>
+  <rect x="1320" y="786" width="176" height="54" rx="18" fill="#FEF3C7"/>
+  <text x="1372" y="820" fill="#B45309" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Purge Logs</text>
+</svg>

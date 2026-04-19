@@ -1,0 +1,60 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EEF2FF"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1600" height="1000" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="20" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect x="60" y="60" width="1480" height="880" rx="34" fill="white"/>
+  <text x="110" y="132" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">2FA Guardian Settings</text>
+  <text x="110" y="172" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="22">Configure authentication methods, enforcement, trusted devices, and security logging.</text>
+  <rect x="1220" y="104" width="220" height="56" rx="18" fill="#1D4ED8"/>
+  <text x="1280" y="139" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Save Settings</text>
+
+  <g filter="url(#shadow)">
+    <rect x="110" y="220" width="1380" height="150" rx="26" fill="#F8FAFC"/>
+    <rect x="110" y="398" width="1380" height="140" rx="26" fill="#F8FAFC"/>
+    <rect x="110" y="566" width="1380" height="140" rx="26" fill="#F8FAFC"/>
+    <rect x="110" y="734" width="1380" height="140" rx="26" fill="#F8FAFC"/>
+  </g>
+
+  <text x="144" y="266" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">General</text>
+  <text x="144" y="316" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Enable Plugin</text>
+  <rect x="420" y="292" width="82" height="40" rx="20" fill="#16A34A"/>
+  <circle cx="480" cy="312" r="16" fill="white"/>
+  <text x="560" y="316" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Enforce 2FA for roles</text>
+  <rect x="860" y="286" width="128" height="42" rx="14" fill="#DBEAFE"/><text x="894" y="313" fill="#1D4ED8" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Admin</text>
+  <rect x="1004" y="286" width="118" height="42" rx="14" fill="#DBEAFE"/><text x="1037" y="313" fill="#1D4ED8" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Editor</text>
+  <rect x="1160" y="286" width="150" height="42" rx="14" fill="#DCFCE7"/><text x="1184" y="313" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Protected</text>
+  <text x="144" y="350" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="18">Selected roles must set up 2FA before they can log in.</text>
+
+  <text x="144" y="446" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Allowed Methods</text>
+  <rect x="144" y="474" width="246" height="42" rx="14" fill="#DBEAFE"/><text x="178" y="501" fill="#1D4ED8" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Authenticator App</text>
+  <rect x="410" y="474" width="160" height="42" rx="14" fill="#E0F2FE"/><text x="456" y="501" fill="#0369A1" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Email OTP</text>
+  <rect x="590" y="474" width="260" height="42" rx="14" fill="#DCFCE7"/><text x="642" y="501" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Security Keys</text>
+  <rect x="870" y="474" width="180" height="42" rx="14" fill="#F3E8FF"/><text x="916" y="501" fill="#7E22CE" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Backup Codes</text>
+
+  <text x="144" y="614" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Trusted Devices</text>
+  <text x="144" y="662" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Enable Trusted Devices</text>
+  <rect x="466" y="638" width="82" height="40" rx="20" fill="#16A34A"/>
+  <circle cx="526" cy="658" r="16" fill="white"/>
+  <text x="620" y="662" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Trust Duration</text>
+  <rect x="812" y="632" width="120" height="48" rx="14" fill="white" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="856" y="663" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">30</text>
+  <text x="952" y="662" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="22">days</text>
+
+  <text x="144" y="782" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Security Logging</text>
+  <text x="144" y="830" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Enable Logging</text>
+  <rect x="360" y="806" width="82" height="40" rx="20" fill="#16A34A"/>
+  <circle cx="420" cy="826" r="16" fill="white"/>
+  <text x="500" y="830" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Retention</text>
+  <rect x="640" y="800" width="120" height="48" rx="14" fill="white" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="676" y="831" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">90</text>
+  <text x="780" y="830" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="22">days</text>
+  <rect x="1180" y="794" width="230" height="54" rx="18" fill="#DCFCE7"/>
+  <text x="1234" y="828" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Security Ready</text>
+</svg>
