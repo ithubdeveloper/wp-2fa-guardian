@@ -10,6 +10,8 @@ class LoginInterceptor {
 
     private const SESSION_KEY = 'guardian_pending_user';
     private const NONCE_KEY   = 'guardian_2fa_nonce';
+    private const MAX_2FA_ATTEMPTS = 5;
+    private const TWO_FA_LOCKOUT_SECONDS = 300;
 
     public function __construct() {
         add_filter( 'authenticate', [ $this, 'intercept_login' ], 50, 3 );
@@ -132,6 +134,10 @@ class LoginInterceptor {
             wp_send_json_error( [ 'message' => __( 'Session expired. Please log in again.', 'wp-2fa-guardian' ) ] );
         }
 
+        if ( self::is_2fa_locked_for_user( $user_id ) ) {
+            wp_send_json_error( [ 'message' => __( 'Too many verification attempts. Please wait a few minutes and try again.', 'wp-2fa-guardian' ) ] );
+        }
+
         $method = sanitize_key( $_POST['method'] ?? '' );
         $code   = sanitize_text_field( wp_unslash( $_POST['code'] ?? '' ) );
 
@@ -139,6 +145,7 @@ class LoginInterceptor {
 
         if ( ! $result ) {
             do_action( 'guardian_2fa_failed', $user_id );
+            self::register_2fa_failure_for_user( $user_id );
             wp_send_json_error( [ 'message' => __( 'Invalid code. Please try again.', 'wp-2fa-guardian' ) ] );
         }
 
@@ -149,6 +156,7 @@ class LoginInterceptor {
         }
 
         // Clear pending session and complete login
+        self::clear_2fa_failures_for_user( $user_id );
         $this->clear_pending();
         $user = get_userdata( $user_id );
         wp_set_auth_cookie( $user_id, ! empty( $pending['remember_me'] ) );
@@ -229,6 +237,37 @@ class LoginInterceptor {
             delete_transient( 'guardian_pending_' . $token );
         }
         setcookie( 'guardian_pending', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN );
+    }
+
+    public static function is_2fa_locked_for_user( int $user_id ): bool {
+        $state = get_transient( 'guardian_2fa_attempts_' . $user_id );
+        if ( ! is_array( $state ) ) {
+            return false;
+        }
+
+        return ! empty( $state['locked_until'] ) && (int) $state['locked_until'] > time();
+    }
+
+    public static function register_2fa_failure_for_user( int $user_id ): void {
+        $state = get_transient( 'guardian_2fa_attempts_' . $user_id );
+        if ( ! is_array( $state ) ) {
+            $state = [
+                'count'        => 0,
+                'locked_until' => 0,
+            ];
+        }
+
+        $state['count'] = (int) $state['count'] + 1;
+        if ( $state['count'] >= self::MAX_2FA_ATTEMPTS ) {
+            $state['locked_until'] = time() + self::TWO_FA_LOCKOUT_SECONDS;
+            $state['count']        = 0;
+        }
+
+        set_transient( 'guardian_2fa_attempts_' . $user_id, $state, self::TWO_FA_LOCKOUT_SECONDS );
+    }
+
+    public static function clear_2fa_failures_for_user( int $user_id ): void {
+        delete_transient( 'guardian_2fa_attempts_' . $user_id );
     }
 
     private function get_setup_redirect_url( string $redirect_to = '' ): string {

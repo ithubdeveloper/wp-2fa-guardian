@@ -11,7 +11,7 @@ class AuthController {
         register_rest_route( $ns, '/status', [
             'methods'             => 'GET',
             'callback'            => [ $this, 'get_status' ],
-            'permission_callback' => '__return_true',
+            'permission_callback' => fn() => current_user_can( 'manage_options' ),
         ] );
 
         register_rest_route( $ns, '/user/(?P<id>[\d]+)/reset', [

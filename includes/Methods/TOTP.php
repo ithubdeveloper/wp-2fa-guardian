@@ -62,7 +62,7 @@ class TOTP {
         $otpauth  = "otpauth://totp/{$issuer}:{$account}?secret={$secret}&issuer={$issuer}&algorithm=SHA1&digits=6&period=30";
 
         // Temporarily store secret for activation step
-        update_user_meta( $user->ID, 'guardian_totp_temp_secret', $secret );
+        update_user_meta( $user->ID, 'guardian_totp_temp_secret', \Guardian\Core\Security::encrypt_user_secret( $user->ID, $secret ) );
 
         wp_send_json_success( [
             'secret'  => $secret,
@@ -82,7 +82,7 @@ class TOTP {
 
         $user_id = get_current_user_id();
         $code    = sanitize_text_field( wp_unslash( $_POST['code'] ?? '' ) );
-        $secret  = get_user_meta( $user_id, 'guardian_totp_temp_secret', true );
+        $secret  = $this->get_temp_secret( $user_id );
 
         if ( ! $secret ) {
             wp_send_json_error( [ 'message' => __( 'Session expired. Please start again.', 'wp-2fa-guardian' ) ] );
@@ -102,7 +102,7 @@ class TOTP {
         }
 
         // Commit secret
-        update_user_meta( $user_id, 'guardian_totp_secret', $secret );
+        update_user_meta( $user_id, 'guardian_totp_secret', \Guardian\Core\Security::encrypt_user_secret( $user_id, $secret ) );
         delete_user_meta( $user_id, 'guardian_totp_temp_secret' );
         update_user_meta( $user_id, 'guardian_active_method', 'totp' );
 
@@ -198,7 +198,32 @@ class TOTP {
     // -------------------------------------------------------
 
     private function get_secret( int $user_id ): ?string {
-        $secret = get_user_meta( $user_id, 'guardian_totp_secret', true );
-        return $secret ?: null;
+        $stored = (string) get_user_meta( $user_id, 'guardian_totp_secret', true );
+        if ( '' === $stored ) {
+            return null;
+        }
+
+        if ( ! \Guardian\Core\Security::is_encrypted_secret( $stored ) ) {
+            update_user_meta( $user_id, 'guardian_totp_secret', \Guardian\Core\Security::encrypt_user_secret( $user_id, $stored ) );
+            return $stored;
+        }
+
+        $secret = \Guardian\Core\Security::decrypt_user_secret( $user_id, $stored );
+        return '' !== $secret ? $secret : null;
+    }
+
+    private function get_temp_secret( int $user_id ): ?string {
+        $stored = (string) get_user_meta( $user_id, 'guardian_totp_temp_secret', true );
+        if ( '' === $stored ) {
+            return null;
+        }
+
+        if ( ! \Guardian\Core\Security::is_encrypted_secret( $stored ) ) {
+            update_user_meta( $user_id, 'guardian_totp_temp_secret', \Guardian\Core\Security::encrypt_user_secret( $user_id, $stored ) );
+            return $stored;
+        }
+
+        $secret = \Guardian\Core\Security::decrypt_user_secret( $user_id, $stored );
+        return '' !== $secret ? $secret : null;
     }
 }

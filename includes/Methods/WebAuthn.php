@@ -102,12 +102,15 @@ class WebAuthn {
         delete_transient( 'guardian_wauthn_reg_challenge_' . $user_id );
 
         // Verify client data
-        $client_data = json_decode( base64_decode( strtr( $data['response']['clientDataJSON'] ?? '', '-_', '+/' ) ), true );
-        if ( ( $client_data['type'] ?? '' ) !== 'webauthn.create' ) {
+        $client_data = $this->decode_client_data_json( (string) ( $data['response']['clientDataJSON'] ?? '' ) );
+        if ( ! is_array( $client_data ) || ( $client_data['type'] ?? '' ) !== 'webauthn.create' ) {
             wp_send_json_error( [ 'message' => 'Invalid credential type.' ] );
         }
         if ( ! hash_equals( $encoded_challenge, (string) ( $client_data['challenge'] ?? '' ) ) ) {
             wp_send_json_error( [ 'message' => 'Challenge mismatch.' ] );
+        }
+        if ( ! $this->is_valid_origin( (string) ( $client_data['origin'] ?? '' ) ) ) {
+            wp_send_json_error( [ 'message' => 'Invalid registration origin.' ] );
         }
 
         $credential_id = $this->base64url_decode( (string) ( $data['rawId'] ?? '' ) );
@@ -127,19 +130,23 @@ class WebAuthn {
             wp_send_json_error( [ 'message' => 'Missing credential identifier.' ] );
         }
 
-        // Parse attestation data when available, but do not block registration on parser quirks.
         $parsed          = null;
         $attestation_raw = $this->base64url_decode( (string) ( $data['response']['attestationObject'] ?? '' ) );
         if ( '' !== $attestation_raw ) {
             $parsed = $this->parse_attestation( $attestation_raw );
+        }
+        if ( empty( $parsed['public_key_raw'] ) || empty( $parsed['credential_id'] ) ) {
+            wp_send_json_error( [ 'message' => 'Unable to parse security key registration data.' ] );
+        }
+        if ( ! hash_equals( $parsed['rp_id_hash'] ?? '', hash( 'sha256', $this->get_rpid(), true ) ) ) {
+            wp_send_json_error( [ 'message' => 'Invalid relying party identifier.' ] );
         }
 
         global $wpdb;
         $table = \Guardian\Core\Database::get_table( 'security_keys' );
 
         $existing_key = $wpdb->get_var( $wpdb->prepare(
-            "SELECT id FROM {$table} WHERE user_id = %d AND credential_id = %s LIMIT 1",
-            $user_id,
+            "SELECT id FROM {$table} WHERE credential_id = %s LIMIT 1",
             base64_encode( $credential_id )
         ) );
         if ( $existing_key ) {
@@ -175,6 +182,9 @@ class WebAuthn {
         $interceptor = new \Guardian\Auth\LoginInterceptor();
         $user_id     = $interceptor->get_pending_user_id();
         if ( ! $user_id ) wp_send_json_error( [ 'message' => 'Session expired.' ] );
+        if ( \Guardian\Auth\LoginInterceptor::is_2fa_locked_for_user( $user_id ) ) {
+            wp_send_json_error( [ 'message' => 'Too many verification attempts. Please wait a few minutes and try again.' ] );
+        }
 
         $challenge         = $this->generate_challenge();
         $encoded_challenge = $this->base64url_encode( $challenge );
@@ -209,14 +219,17 @@ class WebAuthn {
         if ( ! is_string( $encoded_challenge ) || '' === $encoded_challenge ) wp_send_json_error( [ 'message' => 'Challenge expired.' ] );
         delete_transient( 'guardian_wauthn_auth_challenge_' . $user_id );
 
-        // Verify assertion (simplified for 'none' attestation passkeys)
-        $client_data = json_decode( base64_decode( strtr( $data['response']['clientDataJSON'] ?? '', '-_', '+/' ) ), true );
+        $client_data_json = $this->base64url_decode( (string) ( $data['response']['clientDataJSON'] ?? '' ) );
+        $client_data      = json_decode( $client_data_json, true );
 
-        if ( ( $client_data['type'] ?? '' ) !== 'webauthn.get' ) {
-            wp_send_json_error( [ 'message' => 'Invalid type.' ] );
+        if ( ! is_array( $client_data ) || ( $client_data['type'] ?? '' ) !== 'webauthn.get' ) {
+            $this->fail_authentication( $user_id, 'Invalid assertion payload.' );
         }
         if ( ! hash_equals( $encoded_challenge, (string) ( $client_data['challenge'] ?? '' ) ) ) {
-            wp_send_json_error( [ 'message' => 'Challenge mismatch.' ] );
+            $this->fail_authentication( $user_id, 'Challenge mismatch.' );
+        }
+        if ( ! $this->is_valid_origin( (string) ( $client_data['origin'] ?? '' ) ) ) {
+            $this->fail_authentication( $user_id, 'Invalid authenticator origin.' );
         }
 
         $credential_id = $this->base64url_decode( (string) ( $data['rawId'] ?? '' ) );
@@ -224,39 +237,47 @@ class WebAuthn {
             $credential_id = $this->base64url_decode( (string) ( $data['id'] ?? '' ) );
         }
         if ( '' === $credential_id ) {
-            wp_send_json_error( [ 'message' => 'Missing credential identifier.' ] );
+            $this->fail_authentication( $user_id, 'Missing credential identifier.' );
         }
 
         $authenticator_data = $this->base64url_decode( (string) ( $data['response']['authenticatorData'] ?? '' ) );
         if ( strlen( $authenticator_data ) < 37 ) {
-            wp_send_json_error( [ 'message' => 'Invalid authenticator data.' ] );
+            $this->fail_authentication( $user_id, 'Invalid authenticator data.' );
         }
 
         if ( ! hash_equals( substr( $authenticator_data, 0, 32 ), hash( 'sha256', $this->get_rpid(), true ) ) ) {
-            wp_send_json_error( [ 'message' => 'Invalid authenticator origin.' ] );
+            $this->fail_authentication( $user_id, 'Invalid authenticator origin.' );
         }
 
         $flags = ord( $authenticator_data[32] );
         if ( 0 === ( $flags & 0x01 ) ) {
-            wp_send_json_error( [ 'message' => 'Authenticator user presence check failed.' ] );
+            $this->fail_authentication( $user_id, 'Authenticator user presence check failed.' );
         }
-
         $sign_count = unpack( 'N', substr( $authenticator_data, 33, 4 ) )[1];
+        $signature  = $this->base64url_decode( (string) ( $data['response']['signature'] ?? '' ) );
+        if ( '' === $signature ) {
+            $this->fail_authentication( $user_id, 'Missing authenticator signature.' );
+        }
 
         global $wpdb;
         $table = \Guardian\Core\Database::get_table( 'security_keys' );
         $key   = $wpdb->get_row( $wpdb->prepare(
-            "SELECT id, sign_count FROM {$table} WHERE user_id = %d AND credential_id = %s LIMIT 1",
+            "SELECT id, public_key, sign_count FROM {$table} WHERE user_id = %d AND credential_id = %s LIMIT 1",
             $user_id,
             base64_encode( $credential_id )
         ) );
         if ( ! $key ) {
-            wp_send_json_error( [ 'message' => 'Unknown security key.' ] );
+            $this->fail_authentication( $user_id, 'Unknown security key.' );
         }
 
         $stored_sign_count = (int) $key->sign_count;
         if ( $stored_sign_count > 0 && $sign_count > 0 && $sign_count <= $stored_sign_count ) {
-            wp_send_json_error( [ 'message' => 'Security key counter check failed.' ] );
+            $this->fail_authentication( $user_id, 'Security key counter check failed.' );
+        }
+
+        $signed_payload = $authenticator_data . hash( 'sha256', $client_data_json, true );
+        if ( ! $this->verify_assertion_signature( (string) $key->public_key, $signed_payload, $signature ) ) {
+            $this->fail_authentication( $user_id, 'Security key signature verification failed.' );
         }
 
         $wpdb->update( $table, [
@@ -330,6 +351,12 @@ class WebAuthn {
 
     private function get_rpid(): string {
         return wp_parse_url( home_url(), PHP_URL_HOST ) ?? 'localhost';
+    }
+
+    private function fail_authentication( int $user_id, string $message ): void {
+        do_action( 'guardian_2fa_failed', $user_id );
+        \Guardian\Auth\LoginInterceptor::register_2fa_failure_for_user( $user_id );
+        wp_send_json_error( [ 'message' => $message ] );
     }
 
     private function generate_challenge(): string {
@@ -420,9 +447,236 @@ class WebAuthn {
                 'public_key_raw' => $public_key,
                 'sign_count'     => $sign_count,
                 'aaguid'         => $aaguid,
+                'rp_id_hash'     => $rp_id_hash,
             ];
         } catch ( \Throwable $e ) {
             return null;
         }
+    }
+
+    private function decode_client_data_json( string $encoded ): ?array {
+        $decoded = $this->base64url_decode( $encoded );
+        if ( '' === $decoded ) {
+            return null;
+        }
+
+        $data = json_decode( $decoded, true );
+        return is_array( $data ) ? $data : null;
+    }
+
+    private function is_valid_origin( string $origin ): bool {
+        if ( '' === $origin ) {
+            return false;
+        }
+
+        $origin_host   = wp_parse_url( $origin, PHP_URL_HOST );
+        $origin_scheme = wp_parse_url( $origin, PHP_URL_SCHEME );
+        if ( ! is_string( $origin_host ) || ! is_string( $origin_scheme ) ) {
+            return false;
+        }
+
+        if ( ! hash_equals( strtolower( $this->get_rpid() ), strtolower( $origin_host ) ) ) {
+            return false;
+        }
+
+        return 'https' === strtolower( $origin_scheme ) || in_array( strtolower( $origin_host ), [ 'localhost', '127.0.0.1' ], true );
+    }
+
+    private function verify_assertion_signature( string $stored_public_key, string $data, string $signature ): bool {
+        $raw_key = base64_decode( $stored_public_key, true );
+        if ( false === $raw_key || '' === $raw_key ) {
+            return false;
+        }
+
+        $cose = $this->decode_cbor( $raw_key );
+        if ( ! is_array( $cose ) ) {
+            return false;
+        }
+
+        $pem = $this->cose_key_to_pem( $cose );
+        if ( '' === $pem ) {
+            return false;
+        }
+
+        $resource = openssl_pkey_get_public( $pem );
+        if ( false === $resource ) {
+            return false;
+        }
+
+        $verified = openssl_verify( $data, $signature, $resource, OPENSSL_ALGO_SHA256 );
+        if ( is_resource( $resource ) || $resource instanceof \OpenSSLAsymmetricKey ) {
+            openssl_free_key( $resource );
+        }
+
+        return 1 === $verified;
+    }
+
+    private function decode_cbor( string $data ) {
+        $offset = 0;
+        return $this->decode_cbor_item( $data, $offset );
+    }
+
+    private function decode_cbor_item( string $data, int &$offset ) {
+        if ( $offset >= strlen( $data ) ) {
+            return null;
+        }
+
+        $initial = ord( $data[ $offset++ ] );
+        $major   = $initial >> 5;
+        $addl    = $initial & 0x1f;
+        $length  = $this->decode_cbor_length( $data, $offset, $addl );
+
+        switch ( $major ) {
+            case 0:
+                return $length;
+            case 1:
+                return -1 - $length;
+            case 2:
+                $value  = substr( $data, $offset, $length );
+                $offset += $length;
+                return $value;
+            case 3:
+                $value  = substr( $data, $offset, $length );
+                $offset += $length;
+                return $value;
+            case 4:
+                $items = [];
+                for ( $i = 0; $i < $length; $i++ ) {
+                    $items[] = $this->decode_cbor_item( $data, $offset );
+                }
+                return $items;
+            case 5:
+                $items = [];
+                for ( $i = 0; $i < $length; $i++ ) {
+                    $key          = $this->decode_cbor_item( $data, $offset );
+                    $items[ $key ] = $this->decode_cbor_item( $data, $offset );
+                }
+                return $items;
+        }
+
+        return null;
+    }
+
+    private function decode_cbor_length( string $data, int &$offset, int $addl ): int {
+        if ( $addl < 24 ) {
+            return $addl;
+        }
+        if ( 24 === $addl ) {
+            return ord( $data[ $offset++ ] );
+        }
+        if ( 25 === $addl ) {
+            $value  = unpack( 'n', substr( $data, $offset, 2 ) )[1];
+            $offset += 2;
+            return $value;
+        }
+        if ( 26 === $addl ) {
+            $value  = unpack( 'N', substr( $data, $offset, 4 ) )[1];
+            $offset += 4;
+            return $value;
+        }
+
+        throw new \RuntimeException( 'Unsupported CBOR length.' );
+    }
+
+    private function cose_key_to_pem( array $cose ): string {
+        $kty = $cose[1] ?? null;
+        $alg = $cose[3] ?? null;
+
+        if ( 2 === $kty && -7 === $alg && isset( $cose[-2], $cose[-3] ) ) {
+            return $this->ec_key_to_pem( $cose );
+        }
+
+        if ( 3 === $kty && -257 === $alg && isset( $cose[-1], $cose[-2] ) ) {
+            return $this->rsa_key_to_pem( $cose );
+        }
+
+        return '';
+    }
+
+    private function ec_key_to_pem( array $cose ): string {
+        if ( 1 !== ( $cose[-1] ?? null ) ) {
+            return '';
+        }
+
+        $uncompressed = "\x04" . $cose[-2] . $cose[-3];
+        $algorithm    = $this->der_sequence(
+            $this->der_oid( '1.2.840.10045.2.1' ) .
+            $this->der_oid( '1.2.840.10045.3.1.7' )
+        );
+        $subject_key  = $this->der_bit_string( $uncompressed );
+
+        return $this->pem_encode( $this->der_sequence( $algorithm . $subject_key ) );
+    }
+
+    private function rsa_key_to_pem( array $cose ): string {
+        $modulus  = $this->der_integer( $cose[-1] );
+        $exponent = $this->der_integer( $cose[-2] );
+        $pkcs1    = $this->der_sequence( $modulus . $exponent );
+        $algorithm = $this->der_sequence(
+            $this->der_oid( '1.2.840.113549.1.1.1' ) .
+            $this->der_null()
+        );
+        $subject_key = $this->der_bit_string( $pkcs1 );
+
+        return $this->pem_encode( $this->der_sequence( $algorithm . $subject_key ) );
+    }
+
+    private function der_sequence( string $value ): string {
+        return "\x30" . $this->der_length( strlen( $value ) ) . $value;
+    }
+
+    private function der_bit_string( string $value ): string {
+        return "\x03" . $this->der_length( strlen( $value ) + 1 ) . "\x00" . $value;
+    }
+
+    private function der_integer( string $value ): string {
+        if ( '' === $value ) {
+            $value = "\x00";
+        }
+        if ( ord( $value[0] ) > 0x7f ) {
+            $value = "\x00" . $value;
+        }
+        return "\x02" . $this->der_length( strlen( $value ) ) . $value;
+    }
+
+    private function der_null(): string {
+        return "\x05\x00";
+    }
+
+    private function der_oid( string $oid ): string {
+        $parts = array_map( 'intval', explode( '.', $oid ) );
+        $first = ( 40 * $parts[0] ) + $parts[1];
+        $body  = chr( $first );
+
+        foreach ( array_slice( $parts, 2 ) as $part ) {
+            $encoded = '';
+            do {
+                $encoded = chr( $part & 0x7f ) . $encoded;
+                $part >>= 7;
+            } while ( $part > 0 );
+
+            $length = strlen( $encoded );
+            for ( $i = 0; $i < $length - 1; $i++ ) {
+                $body .= chr( ord( $encoded[ $i ] ) | 0x80 );
+            }
+            $body .= $encoded[ $length - 1 ];
+        }
+
+        return "\x06" . $this->der_length( strlen( $body ) ) . $body;
+    }
+
+    private function der_length( int $length ): string {
+        if ( $length < 128 ) {
+            return chr( $length );
+        }
+
+        $bytes = ltrim( pack( 'N', $length ), "\x00" );
+        return chr( 0x80 | strlen( $bytes ) ) . $bytes;
+    }
+
+    private function pem_encode( string $der ): string {
+        return "-----BEGIN PUBLIC KEY-----\n" .
+            chunk_split( base64_encode( $der ), 64, "\n" ) .
+            "-----END PUBLIC KEY-----\n";
     }
 }

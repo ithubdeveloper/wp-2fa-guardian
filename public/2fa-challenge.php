@@ -75,7 +75,7 @@ $method_labels = [
                 data-method="<?php echo esc_attr( $m ); ?>"
                 type="button"
             >
-                <span class="guardian-method-tab__icon"><?php echo $info['icon']; ?></span>
+                <span class="guardian-method-tab__icon"><?php echo esc_html( $info['icon'] ); ?></span>
                 <span class="guardian-method-tab__label"><?php echo esc_html( $info['label'] ); ?></span>
             </button>
             <?php endforeach; ?>
