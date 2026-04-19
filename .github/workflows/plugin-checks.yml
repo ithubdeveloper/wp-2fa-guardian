@@ -1,0 +1,102 @@
+name: Plugin Checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php-version }} checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - '8.0'
+          - '8.1'
+          - '8.2'
+          - '8.3'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Lint PHP files
+        shell: bash
+        run: |
+          mapfile -t php_files < <(find . -type f -name '*.php' ! -path './.git/*')
+
+          if [ "${#php_files[@]}" -eq 0 ]; then
+            echo "No PHP files found."
+            exit 0
+          fi
+
+          for file in "${php_files[@]}"; do
+            echo "Linting $file"
+            php -l "$file"
+          done
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          mapfile -t js_files < <(find ./assets -type f -name '*.js' 2>/dev/null)
+
+          if [ "${#js_files[@]}" -eq 0 ]; then
+            echo "No JavaScript files found."
+            exit 0
+          fi
+
+          for file in "${js_files[@]}"; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+
+      - name: Verify plugin entrypoint metadata
+        shell: bash
+        run: |
+          php -r '
+          $contents = file_get_contents("wp-2fa-guardian.php");
+          $required = ["Plugin Name:", "Version:", "Requires PHP:", "Text Domain:"];
+          foreach ($required as $field) {
+              if (strpos($contents, $field) === false) {
+                  fwrite(STDERR, "Missing required header field: {$field}\n");
+                  exit(1);
+              }
+          }
+          echo "Plugin header looks valid.\n";
+          '
+
+      - name: Build plugin package
+        shell: bash
+        run: |
+          mkdir -p build
+          zip -r build/wp-2fa-guardian.zip . \
+            -x '*.git*' \
+            -x 'build/*' \
+            -x '.DS_Store' \
+            -x '.github/*' \
+            -x 'tests/*' \
+            -x 'bin/*' \
+            -x 'vendor/*' \
+            -x 'composer.json' \
+            -x 'composer.lock' \
+            -x 'phpunit.xml.dist'
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-2fa-guardian-php${{ matrix.php-version }}
+          path: build/wp-2fa-guardian.zip

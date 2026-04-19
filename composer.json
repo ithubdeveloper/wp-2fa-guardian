@@ -1,0 +1,12 @@
+{
+  "name": "ithubdeveloper/wp-2fa-guardian",
+  "description": "WordPress 2FA plugin with TOTP, email OTP, WebAuthn, backup codes, and trusted devices.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  },
+  "scripts": {
+    "test": "phpunit"
+  }
+}
