@@ -19,6 +19,7 @@ Two-factor authentication for WordPress with TOTP, email OTP, WebAuthn security 
 - Plugin slug: `wp-2fa-guardian`
 - Version: `1.1.0`
 - Requires WordPress: `6.0+`
+- Tested up to: `6.6.4`
 - Requires PHP: `8.0+`
 - Author: [IT Hub Developer](https://github.com/ithubdeveloper)
 - Repository: [ithubdeveloper/wp-2fa-guardian](https://github.com/ithubdeveloper/wp-2fa-guardian)
@@ -75,6 +76,17 @@ If your project uses Composer installers, the plugin will install to your WordPr
 
 You can also download a release ZIP from the GitHub Releases page once published.
 
+## WordPress.org Publishing Readiness
+
+Use this checklist when preparing a Plugin Directory submission:
+
+- Unique plugin slug and stable version tags
+- Valid plugin headers in `wp-2fa-guardian.php`
+- Complete `readme.txt` fields (requirements, FAQ, screenshots, changelog, upgrade notes)
+- GPL-compatible licensing and links
+- Screenshot assets available as `assets/screenshot-1.png`, `assets/screenshot-2.png`, and `assets/screenshot-3.png`
+- ZIP package generated from repository using `bin/package-plugin.sh`
+
 ## Frequently Asked Questions
 
 ### Which 2FA methods are supported?
@@ -99,9 +111,17 @@ No. The plugin does not require Composer to run.
 
 ## Screenshots
 
-1. Login verification screen
-2. User profile 2FA setup screen
-3. Settings screen for enforcement, trusted devices, and security logging
+### 1) Login verification flow
+
+![Login verification flow](assets/screenshot-1.png)
+
+### 2) User profile setup flow
+
+![User profile setup flow](assets/screenshot-2.png)
+
+### 3) Admin security and enforcement controls
+
+![Admin security and enforcement controls](assets/screenshot-3.png)
 
 ## Changelog
 
